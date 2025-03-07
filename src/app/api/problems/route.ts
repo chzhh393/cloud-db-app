@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { aiTasksService } from '../../lib/cloudbase';
+import { getCloudbaseApp } from '../../lib/cloudbase';
 
 // 云开发初始化配置
 const ENV_ID = 'dev-8grd339lb1d943ec';
@@ -8,11 +9,8 @@ const ENV_ID = 'dev-8grd339lb1d943ec';
 // 在服务器端安全地初始化SDK
 const initServerSDK = () => {
   try {
-    // 这是一个简化的示例，实际使用中应该使用服务端SDK
-    const app = cloudbase.init({
-      env: ENV_ID,
-    });
-    return app;
+    // 使用导入的getCloudbaseApp方法
+    return getCloudbaseApp();
   } catch (error) {
     console.error('初始化SDK失败:', error);
     return null;

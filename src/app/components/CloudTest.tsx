@@ -1,134 +1,116 @@
 'use client';
 
 import { useState } from 'react';
-import { getCloudbaseApp, getAuth, getModels } from '../lib/cloudbase';
+import { getCloudbaseApp, getAuth } from '../lib/cloudbase';
 
 export default function CloudTest() {
   const [testResults, setTestResults] = useState<{
-    app: boolean | null;
-    auth: boolean | null;
-    models: boolean | null;
-    tables: string[] | null;
+    sdk: boolean;
+    auth: boolean;
+    db: boolean;
+    message: string;
   }>({
-    app: null,
-    auth: null,
-    models: null,
-    tables: null,
+    sdk: false,
+    auth: false,
+    db: false,
+    message: '',
   });
-  
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const runTests = async () => {
-    setLoading(true);
-    setError(null);
-    const results = {
-      app: false,
-      auth: false,
-      models: false,
-      tables: null as string[] | null,
-    };
-
+  const runTest = async () => {
     try {
-      // 测试初始化
+      // 测试SDK初始化
       const app = getCloudbaseApp();
-      results.app = !!app;
-      console.log('App初始化结果:', app);
-
-      if (app) {
-        // 测试认证
-        const auth = await getAuth();
-        results.auth = !!auth;
-        console.log('Auth认证结果:', auth);
-
-        // 测试获取models
-        const models = await getModels();
-        results.models = !!models;
-        console.log('Models获取结果:', models);
-
-        // 尝试获取可用的数据表
-        if (models) {
-          try {
-            // 这里可能需要根据实际SDK调整
-            const tables = Object.keys(models);
-            results.tables = tables;
-            console.log('可用数据表:', tables);
-          } catch (e) {
-            console.error('获取数据表失败:', e);
-          }
-        }
+      if (!app) {
+        setTestResults({
+          sdk: false,
+          auth: false,
+          db: false,
+          message: 'SDK初始化失败',
+        });
+        return;
       }
-    } catch (err) {
-      console.error('测试过程出错:', err);
-      setError(err instanceof Error ? err.message : '测试过程出错');
-    } finally {
-      setTestResults(results);
-      setLoading(false);
+
+      setTestResults(prev => ({ ...prev, sdk: true }));
+
+      // 测试认证
+      const auth = await getAuth();
+      if (!auth) {
+        setTestResults(prev => ({
+          ...prev,
+          auth: false,
+          message: '认证失败',
+        }));
+        return;
+      }
+
+      setTestResults(prev => ({ ...prev, auth: true }));
+
+      // 测试数据库
+      try {
+        const db = app.database();
+        
+        // 尝试简单查询
+        const result = await db.collection('ai_tasks').limit(1).get();
+        console.log('数据库测试结果:', result);
+        
+        setTestResults(prev => ({
+          ...prev,
+          db: true,
+          message: '所有测试通过',
+        }));
+      } catch (dbError) {
+        console.error('数据库测试失败:', dbError);
+        setTestResults(prev => ({
+          ...prev,
+          db: false,
+          message: `数据库测试失败: ${dbError instanceof Error ? dbError.message : String(dbError)}`,
+        }));
+      }
+    } catch (error) {
+      console.error('测试过程出错:', error);
+      setTestResults({
+        sdk: false,
+        auth: false,
+        db: false,
+        message: `测试失败: ${error instanceof Error ? error.message : String(error)}`,
+      });
     }
   };
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">云开发连接测试</h2>
+      <h2 className="text-xl font-semibold mb-4">腾讯云开发连接测试</h2>
       
       <button
-        onClick={runTests}
-        disabled={loading}
-        className="mb-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+        onClick={runTest}
+        className="mb-4 py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700"
       >
-        {loading ? '测试中...' : '运行测试'}
+        运行测试
       </button>
-      
-      {error && (
-        <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
       
       <div className="space-y-2">
         <div className="flex items-center">
-          <span className="w-32">SDK初始化:</span>
-          <StatusIndicator status={testResults.app} />
+          <span className={`inline-block w-4 h-4 rounded-full mr-2 ${testResults.sdk ? 'bg-green-500' : 'bg-red-500'}`}></span>
+          <span>SDK初始化: {testResults.sdk ? '成功' : '失败'}</span>
         </div>
         
         <div className="flex items-center">
-          <span className="w-32">认证状态:</span>
-          <StatusIndicator status={testResults.auth} />
+          <span className={`inline-block w-4 h-4 rounded-full mr-2 ${testResults.auth ? 'bg-green-500' : 'bg-red-500'}`}></span>
+          <span>认证: {testResults.auth ? '成功' : '失败'}</span>
         </div>
         
         <div className="flex items-center">
-          <span className="w-32">Models获取:</span>
-          <StatusIndicator status={testResults.models} />
+          <span className={`inline-block w-4 h-4 rounded-full mr-2 ${testResults.db ? 'bg-green-500' : 'bg-red-500'}`}></span>
+          <span>数据库: {testResults.db ? '成功' : '失败'}</span>
         </div>
-        
-        {testResults.tables && (
-          <div>
-            <span className="block mb-1">可用数据表:</span>
-            <ul className="list-disc pl-5">
-              {testResults.tables.length > 0 ? (
-                testResults.tables.map((table, index) => (
-                  <li key={index} className="text-sm">{table}</li>
-                ))
-              ) : (
-                <li className="text-sm text-gray-500">未找到数据表</li>
-              )}
-            </ul>
-          </div>
-        )}
       </div>
+      
+      {testResults.message && (
+        <div className={`mt-4 p-3 rounded ${testResults.sdk && testResults.auth && testResults.db ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+          {testResults.message}
+        </div>
+      )}
     </div>
   );
-}
-
-function StatusIndicator({ status }: { status: boolean | null }) {
-  if (status === null) {
-    return <span className="text-gray-500">未测试</span>;
-  }
-  
-  if (status) {
-    return <span className="text-green-600">✓ 成功</span>;
-  }
-  
-  return <span className="text-red-600">✗ 失败</span>;
 } 
 

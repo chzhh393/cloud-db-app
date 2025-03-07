@@ -308,25 +308,25 @@ export const aiTasksService = {
   // 创建问题
   createProblem: async (problemData: any) => {
     try {
-      const models = getModels();
-      if (!models) {
-        throw new Error('无法获取数据模型');
+      // 获取数据库对象
+      const app = getCloudbaseApp();
+      if (!app) {
+        throw new Error('只能在客户端环境中操作数据');
       }
       
-      // 添加创建时间
-      const data = {
-        ...problemData,
-        created_at: new Date()
-      };
+      // 获取数据库对象
+      const db = app.database();
       
-      const { data: result } = await models.ai_problems.create({
-        data
-      });
+      // 创建集合引用
+      const collection = db.collection('ai_problems');
       
-      console.log('问题创建成功:', result);
+      // 添加数据
+      const result = await collection.add(problemData);
+      
+      console.log('创建问题成功:', result);
       return result;
     } catch (error) {
-      console.error('创建问题失败:', error);
+      console.error("创建问题失败:", error);
       throw error;
     }
   },

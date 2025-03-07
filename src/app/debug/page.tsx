@@ -180,6 +180,8 @@ export default function DebugJsonPage() {
         </div>
       </div>
       
+      <h1 className="text-2xl font-bold mb-6">JSON解析调试工具</h1>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <h2 className="text-lg font-semibold mb-2">输入JSON</h2>
@@ -261,5 +263,17 @@ export default function DebugJsonPage() {
       <div className="mt-6">
         <h2 className="text-lg font-semibold mb-2">解决方案推荐</h2>
         <div className="bg-blue-50 p-4 rounded-md">
-          <p className="mb-2">如果您的JSON解析一直失败，尝试以 
+          <p className="mb-2">如果您的JSON解析一直失败，尝试以下方法：</p>
+          <ol className="list-decimal pl-5 space-y-1">
+            <li>确保JSON格式正确，使用在线JSON验证工具检查</li>
+            <li>处理特殊字符，特别是反斜杠和引号</li>
+            <li>对于数学公式，使用双反斜杠转义</li>
+            <li>确保所有键名都有引号</li>
+            <li>尝试使用文件上传而不是直接粘贴</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  );
+}
 
