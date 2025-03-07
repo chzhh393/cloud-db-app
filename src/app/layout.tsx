@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "腾讯云开发任务管理",
+  title: "题目管理",
   description: "使用Next.js开发的腾讯云开发平台数据表操作Web应用",
 };
 

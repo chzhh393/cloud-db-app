@@ -5,7 +5,6 @@ import TaskList from './components/TaskList';
 import TaskForm from './components/TaskForm';
 import CloudTest from './components/CDNTest';
 import AuthTest from './components/AuthTest';
-import ImportProblems from './components/ImportProblems';
 import { AITask } from './lib/types';
 import { aiTasksService } from './lib/cloudbase';
 import Link from 'next/link';
@@ -18,7 +17,6 @@ export default function Home() {
   const [showTest, setShowTest] = useState(false);
   const [showAuthTest, setShowAuthTest] = useState(false);
   const [showCDNTest, setShowCDNTest] = useState(false);
-  const [showImport, setShowImport] = useState(false);
   const [dataDebug, setDataDebug] = useState<string | null>(null);
 
   // 获取任务列表
@@ -98,11 +96,33 @@ export default function Home() {
     <main className="min-h-screen p-6 bg-gray-50">
       <div className="max-w-6xl mx-auto">
         <header className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">腾讯云开发任务管理</h1>
-          <div className="flex space-x-2">
-            <Link href="/import-math" className="py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700">
+          <h1 className="text-2xl font-bold">腾讯云开发任务管理</h1>
+          
+          <div className="flex space-x-3">
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
+            >
+              {showForm ? '取消' : '新建任务'}
+            </button>
+            
+            <Link
+              href="/import-math"
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none"
+            >
               导入数学题目
             </Link>
+            
+            <button
+              onClick={() => {
+                setShowTest(!showTest);
+                setShowAuthTest(false);
+                setShowCDNTest(false);
+              }}
+              className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none"
+            >
+              {showTest ? '隐藏测试' : '显示测试'}
+            </button>
           </div>
         </header>
 
@@ -127,12 +147,6 @@ export default function Home() {
         {showTest && (
           <div className="mb-6">
             <CloudTest />
-          </div>
-        )}
-
-        {showImport && (
-          <div className="mb-6">
-            <ImportProblems />
           </div>
         )}
 
